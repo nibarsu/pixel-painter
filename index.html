@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>像素小畫家</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>像素小畫家</h1>
+    <p class="intro">選一個顏色，然後在畫布上畫出自己的像素作品，畫布大小最大可以到 128x128。</p>
+
+    <div class="toolbar">
+      <label for="gridSizeSelect">畫布大小：</label>
+      <select id="gridSizeSelect">
+        <option value="16">16 x 16</option>
+        <option value="32" selected>32 x 32</option>
+        <option value="64">64 x 64</option>
+        <option value="128">128 x 128</option>
+      </select>
+
+      <label for="colorPicker">選擇顏色：</label>
+      <input type="color" id="colorPicker" value="#ff4d4d">
+
+      <label for="imageInput" class="uploadLabel">匯入圖片：</label>
+      <input type="file" id="imageInput" accept="image/*">
+
+      <label for="framesInput" class="uploadLabel">動畫資料夾：</label>
+      <input type="file" id="framesInput" accept="image/*" webkitdirectory multiple>
+
+      <button id="pencilBtn" class="active">鉛筆</button>
+      <button id="fillBtn">填色</button>
+      <button id="eraserBtn">橡皮擦</button>
+      <button id="clearBtn">清空畫布</button>
+      <button id="saveBtn">存檔</button>
+    </div>
+
+    <div class="sampleSection">
+      <h2>範例圖片</h2>
+      <p class="sampleIntro">點一下下面的圖片，就可以把它載入成像素畫來修改或上色。</p>
+
+      <div class="sampleGallery">
+        <button class="sampleCard" type="button" data-sample-id="star" data-sample-src="samples/star.svg">
+          <img src="samples/star.svg" alt="星星範例圖片">
+          <span>星星</span>
+        </button>
+
+        <button class="sampleCard" type="button" data-sample-id="heart" data-sample-src="samples/heart.svg">
+          <img src="samples/heart.svg" alt="愛心範例圖片">
+          <span>愛心</span>
+        </button>
+
+        <button class="sampleCard" type="button" data-sample-id="cat" data-sample-src="samples/cat.svg">
+          <img src="samples/cat.svg" alt="小貓範例圖片">
+          <span>小貓</span>
+        </button>
+
+        <button class="sampleCard" type="button" data-sample-id="flower" data-sample-src="samples/flower.svg">
+          <img src="samples/flower.svg" alt="花朵範例圖片">
+          <span>花朵</span>
+        </button>
+
+        <button class="sampleCard" type="button" data-sample-id="rocket" data-sample-src="samples/rocket.svg">
+          <img src="samples/rocket.svg" alt="火箭範例圖片">
+          <span>火箭</span>
+        </button>
+      </div>
+
+      <div class="stepsSection">
+        <h3>Drawing Steps</h3>
+        <p class="stepsIntro">Choose a sample picture to see simple step-by-step drawing images for your video.</p>
+        <div id="stepsGrid" class="stepsGrid">
+          <p id="stepsPlaceholder" class="stepsPlaceholder">No drawing steps selected yet.</p>
+        </div>
+      </div>
+
+      <div class="stepsSection">
+        <h3>我的動畫影格</h3>
+        <p class="stepsIntro">使用方式：先在左邊畫布畫第一張，按「加入目前影格」；再修改畫面後繼續加入下一張。完成多張後，按「播放我的影格」就可以播放你自己做的動畫。</p>
+
+        <div class="animationControls">
+          <button id="addFrameBtn" type="button">加入目前影格</button>
+          <button id="playMyFramesBtn" type="button">播放我的影格</button>
+          <button id="deleteLastFrameBtn" type="button">刪除最後一張</button>
+          <button id="clearMyFramesBtn" type="button">清空我的影格</button>
+        </div>
+
+        <p id="myFramesInfo">你目前還沒有儲存任何影格。</p>
+        <div id="myFramesGrid" class="stepsGrid">
+          <p id="myFramesPlaceholder" class="stepsPlaceholder">你儲存的影格會顯示在這裡。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <canvas id="canvas" width="512" height="512"></canvas>
+
+      <div class="previewPanel">
+        <h2>圖片預覽區</h2>
+        <div class="previewBox">
+          <img id="imagePreview" alt="你匯入的圖片會顯示在這裡">
+          <p id="previewText">還沒有選擇圖片</p>
+        </div>
+
+        <h2>動畫播放區</h2>
+        <div class="previewBox animationBox">
+          <canvas id="animationCanvas" width="256" height="256"></canvas>
+          <p id="animationText">還沒有選擇動畫資料夾</p>
+
+          <div class="animationControls">
+            <button id="prevFrameBtn" type="button">上一張</button>
+            <button id="playBtn" type="button">播放</button>
+            <button id="nextFrameBtn" type="button">下一張</button>
+          </div>
+
+          <label for="speedRange">播放速度：</label>
+          <input type="range" id="speedRange" min="1" max="12" value="4">
+          <p id="frameInfo">目前沒有影格</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

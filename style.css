@@ -1,0 +1,286 @@
+body {
+  margin: 0;
+  font-family: "Microsoft JhengHei", sans-serif;
+  background-color: #f7efe5;
+  color: #333333;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 8px;
+}
+
+.intro {
+  margin-top: 0;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sampleSection {
+  margin-bottom: 24px;
+}
+
+.sampleSection h2 {
+  margin-bottom: 8px;
+}
+
+.sampleIntro {
+  margin-top: 0;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.sampleGallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.sampleCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 120px;
+  padding: 12px;
+  background-color: #fffaf4;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.sampleCard img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+}
+
+.sampleCard span {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.stepsSection {
+  max-width: 980px;
+  margin: 22px auto 0;
+  padding: 18px;
+  border: 3px solid #333333;
+  border-radius: 18px;
+  background-color: #fffaf4;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.stepsSection h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+.stepsIntro {
+  margin-top: 0;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.stepsPlaceholder {
+  margin: 0;
+  grid-column: 1 / -1;
+}
+
+.stepCard {
+  padding: 12px;
+  border: 2px solid #333333;
+  border-radius: 14px;
+  background-color: #ffffff;
+}
+
+.stepCard img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 10px;
+  background-color: #fffaf0;
+}
+
+.stepCard p {
+  margin: 10px 0 0;
+  font-weight: bold;
+}
+
+#myFramesInfo {
+  margin-top: 0;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.frameThumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 10px;
+  background-color: #fffaf0;
+  image-rendering: pixelated;
+}
+
+.workspace {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+button,
+input[type="color"],
+input[type="file"],
+select {
+  border: 2px solid #333333;
+  border-radius: 10px;
+}
+
+button {
+  padding: 10px 16px;
+  font-size: 16px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+button.active {
+  background-color: #ffd166;
+}
+
+button:hover {
+  background-color: #fff1b8;
+}
+
+input[type="color"] {
+  width: 56px;
+  height: 40px;
+  padding: 2px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+input[type="file"] {
+  max-width: 220px;
+  padding: 8px 10px;
+  font-size: 14px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+select {
+  padding: 9px 12px;
+  font-size: 16px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.uploadLabel {
+  font-weight: bold;
+}
+
+canvas {
+  width: min(72vw, 900px);
+  height: min(72vw, 900px);
+  border: 3px solid #333333;
+  background-color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  image-rendering: pixelated;
+}
+
+.previewPanel {
+  width: min(24vw, 280px);
+  text-align: center;
+}
+
+.previewPanel h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 22px;
+}
+
+.previewBox {
+  min-height: 300px;
+  padding: 16px;
+  border: 3px solid #333333;
+  border-radius: 16px;
+  background-color: #fffaf4;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.previewBox img {
+  display: none;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.previewBox p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.animationBox {
+  margin-top: 18px;
+}
+
+#animationCanvas {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 12px;
+  border: 3px solid #333333;
+  background-color: #ffffff;
+  image-rendering: pixelated;
+}
+
+.animationControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+#speedRange {
+  width: 100%;
+  margin-top: 8px;
+}
+
+@media (max-width: 1100px) {
+  .workspace {
+    flex-wrap: wrap;
+  }
+
+  canvas {
+    width: min(90vw, 700px);
+    height: min(90vw, 700px);
+  }
+
+  .previewPanel {
+    width: min(90vw, 420px);
+  }
+}
