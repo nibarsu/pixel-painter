@@ -4,6 +4,7 @@ const ctx = canvas.getContext("2d");
 const gridSizeSelect = document.getElementById("gridSizeSelect");
 const colorPicker = document.getElementById("colorPicker");
 const imageInput = document.getElementById("imageInput");
+const randomAnimalBtn = document.getElementById("randomAnimalBtn");
 const framesInput = document.getElementById("framesInput");
 const sampleCards = document.querySelectorAll(".sampleCard");
 const stepsGrid = document.getElementById("stepsGrid");
@@ -51,6 +52,14 @@ let currentFrameIndex = 0;
 let isPlayingAnimation = false;
 let animationTimer = null;
 let myAnimationFrameSources = [];
+let currentPreviewObjectUrl = null;
+
+// 使用內建像素動物圖，確保來源本身就是像素風格，不是照片轉換而來。
+const pixelAnimalSources = [
+  "samples/animals/pixel-cat.svg",
+  "samples/animals/pixel-dog.svg",
+  "samples/animals/pixel-fox.svg"
+];
 
 disableCanvasSmoothing(ctx);
 disableCanvasSmoothing(animationCtx);
@@ -160,6 +169,16 @@ function updateImagePreview(imageSource) {
   imagePreview.src = imageSource;
   imagePreview.style.display = "block";
   previewText.style.display = "none";
+}
+
+// 釋放上一張暫存的 Blob URL，避免重複抓圖時累積記憶體。
+function revokePreviewObjectUrl() {
+  if (!currentPreviewObjectUrl) {
+    return;
+  }
+
+  URL.revokeObjectURL(currentPreviewObjectUrl);
+  currentPreviewObjectUrl = null;
 }
 
 // 依照目前像素內容輸出 PNG Data URL，方便下載與建立動畫影格。
@@ -454,6 +473,24 @@ function useImageForPainting(imageSource) {
   image.src = imageSource;
 }
 
+// 從內建素材中隨機挑一張像素動物圖。
+function getRandomPixelAnimalSource() {
+  const randomIndex = Math.floor(Math.random() * pixelAnimalSources.length);
+  return pixelAnimalSources[randomIndex];
+}
+
+// 載入內建像素動物圖，保留現有的畫布編輯流程。
+async function loadRandomOnlinePixelImage(loadingText) {
+  const imageUrl = getRandomPixelAnimalSource();
+
+  previewText.textContent = loadingText;
+  previewText.style.display = "block";
+  imagePreview.style.display = "none";
+
+  revokePreviewObjectUrl();
+  useImageForPainting(imageUrl);
+}
+
 // 將目前畫布下載成 PNG 檔案。
 function saveArtwork() {
   const downloadLink = document.createElement("a");
@@ -643,6 +680,16 @@ clearBtn.addEventListener("click", function () {
 
 saveBtn.addEventListener("click", function () {
   saveArtwork();
+});
+
+randomAnimalBtn.addEventListener("click", async function () {
+  try {
+    await loadRandomOnlinePixelImage("正在載入隨機像素動物圖...");
+  } catch (error) {
+    previewText.textContent = "載入像素動物圖時發生錯誤，請稍後再試。";
+    previewText.style.display = "block";
+    imagePreview.style.display = "none";
+  }
 });
 
 addFrameBtn.addEventListener("click", function () {
