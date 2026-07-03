@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>像素小畫家</title>
+  <title>Pixel 小畫家 | 線上像素畫工具</title>
+  <meta
+    name="description"
+    content="Pixel 小畫家是一個可直接在瀏覽器中畫像素圖、匯入圖片轉成 pixel art、預覽動畫影格並匯出 PNG 的線上工具。"
+  >
+  <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1>像素小畫家</h1>
-    <p class="intro">選一個顏色，然後在畫布上畫出自己的像素作品，畫布大小最大可以到 128x128。</p>
+    <h1>Pixel 小畫家</h1>
+    <p class="intro">
+      直接進入 pixel 畫圖模式。你可以用滑鼠在格子上作畫、匯入圖片轉成像素風格，
+      也能建立簡單動畫影格並匯出成 PNG。
+    </p>
 
     <div class="toolbar">
-      <label for="gridSizeSelect">畫布大小：</label>
+      <label for="gridSizeSelect">畫布尺寸</label>
       <select id="gridSizeSelect">
         <option value="16">16 x 16</option>
         <option value="32" selected>32 x 32</option>
@@ -20,25 +28,27 @@
         <option value="128">128 x 128</option>
       </select>
 
-      <label for="colorPicker">選擇顏色：</label>
+      <label for="colorPicker">目前顏色</label>
       <input type="color" id="colorPicker" value="#ff4d4d">
 
-      <label for="imageInput" class="uploadLabel">匯入圖片：</label>
+      <label for="imageInput" class="uploadLabel">匯入單張圖片</label>
       <input type="file" id="imageInput" accept="image/*">
 
-      <label for="framesInput" class="uploadLabel">動畫資料夾：</label>
+      <label for="framesInput" class="uploadLabel">匯入動畫資料夾</label>
       <input type="file" id="framesInput" accept="image/*" webkitdirectory multiple>
 
-      <button id="pencilBtn" class="active">鉛筆</button>
-      <button id="fillBtn">填色</button>
-      <button id="eraserBtn">橡皮擦</button>
-      <button id="clearBtn">清空畫布</button>
-      <button id="saveBtn">存檔</button>
+      <button id="pencilBtn" class="active" type="button">畫筆</button>
+      <button id="fillBtn" type="button">填色</button>
+      <button id="eraserBtn" type="button">橡皮擦</button>
+      <button id="clearBtn" type="button">清空畫布</button>
+      <button id="saveBtn" type="button">下載 PNG</button>
     </div>
 
     <div class="sampleSection">
       <h2>範例圖片</h2>
-      <p class="sampleIntro">點一下下面的圖片，就可以把它載入成像素畫來修改或上色。</p>
+      <p class="sampleIntro">
+        點選下方範例，可以快速載入圖片、查看拆解步驟，並直接開始照著畫。
+      </p>
 
       <div class="sampleGallery">
         <button class="sampleCard" type="button" data-sample-id="star" data-sample-src="samples/star.svg">
@@ -68,45 +78,47 @@
       </div>
 
       <div class="stepsSection">
-        <h3>Drawing Steps</h3>
-        <p class="stepsIntro">Choose a sample picture to see simple step-by-step drawing images for your video.</p>
+        <h3>教學步驟</h3>
+        <p class="stepsIntro">選擇一張範例圖片後，這裡會顯示簡單的逐步畫法。</p>
         <div id="stepsGrid" class="stepsGrid">
-          <p id="stepsPlaceholder" class="stepsPlaceholder">No drawing steps selected yet.</p>
+          <p id="stepsPlaceholder" class="stepsPlaceholder">尚未選擇範例圖片。</p>
         </div>
       </div>
 
       <div class="stepsSection">
         <h3>我的動畫影格</h3>
-        <p class="stepsIntro">使用方式：先在左邊畫布畫第一張，按「加入目前影格」；再修改畫面後繼續加入下一張。完成多張後，按「播放我的影格」就可以播放你自己做的動畫。</p>
+        <p class="stepsIntro">
+          你可以把目前畫布加入影格清單，累積多張圖後再播放預覽，快速做出簡單的像素動畫。
+        </p>
 
         <div class="animationControls">
           <button id="addFrameBtn" type="button">加入目前影格</button>
-          <button id="playMyFramesBtn" type="button">播放我的影格</button>
+          <button id="playMyFramesBtn" type="button">載入我的影格</button>
           <button id="deleteLastFrameBtn" type="button">刪除最後一張</button>
           <button id="clearMyFramesBtn" type="button">清空我的影格</button>
         </div>
 
-        <p id="myFramesInfo">你目前還沒有儲存任何影格。</p>
+        <p id="myFramesInfo">目前還沒有加入任何影格。</p>
         <div id="myFramesGrid" class="stepsGrid">
-          <p id="myFramesPlaceholder" class="stepsPlaceholder">你儲存的影格會顯示在這裡。</p>
+          <p id="myFramesPlaceholder" class="stepsPlaceholder">請先把畫好的內容加入影格清單。</p>
         </div>
       </div>
     </div>
 
     <div class="workspace">
-      <canvas id="canvas" width="512" height="512"></canvas>
+      <canvas id="canvas" width="512" height="512" aria-label="像素畫布"></canvas>
 
       <div class="previewPanel">
-        <h2>圖片預覽區</h2>
+        <h2>圖片預覽</h2>
         <div class="previewBox">
-          <img id="imagePreview" alt="你匯入的圖片會顯示在這裡">
-          <p id="previewText">還沒有選擇圖片</p>
+          <img id="imagePreview" alt="匯入的圖片預覽">
+          <p id="previewText">匯入或選擇範例圖片後，預覽會顯示在這裡。</p>
         </div>
 
-        <h2>動畫播放區</h2>
+        <h2>動畫預覽</h2>
         <div class="previewBox animationBox">
-          <canvas id="animationCanvas" width="256" height="256"></canvas>
-          <p id="animationText">還沒有選擇動畫資料夾</p>
+          <canvas id="animationCanvas" width="256" height="256" aria-label="動畫預覽畫布"></canvas>
+          <p id="animationText">匯入影格資料夾或載入我的影格後，即可在這裡播放。</p>
 
           <div class="animationControls">
             <button id="prevFrameBtn" type="button">上一張</button>
@@ -114,9 +126,9 @@
             <button id="nextFrameBtn" type="button">下一張</button>
           </div>
 
-          <label for="speedRange">播放速度：</label>
+          <label for="speedRange">播放速度</label>
           <input type="range" id="speedRange" min="1" max="12" value="4">
-          <p id="frameInfo">目前沒有影格</p>
+          <p id="frameInfo">目前沒有影格。</p>
         </div>
       </div>
     </div>

@@ -67,6 +67,8 @@ h1 {
   width: 88px;
   height: 88px;
   object-fit: contain;
+  /* 放大像素風圖片時保留銳利方格，避免瀏覽器自動平滑。 */
+  image-rendering: pixelated;
 }
 
 .sampleCard span {
@@ -120,6 +122,8 @@ h1 {
   object-fit: contain;
   border-radius: 10px;
   background-color: #fffaf0;
+  /* 教學步驟圖可能會被卡片放大，使用 pixelated 避免模糊。 */
+  image-rendering: pixelated;
 }
 
 .stepCard p {
@@ -206,6 +210,7 @@ canvas {
   border: 3px solid #333333;
   background-color: #ffffff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  /* 畫布以 CSS 放大顯示時，保留像素邊緣不要被插值模糊。 */
   image-rendering: pixelated;
 }
 
@@ -235,6 +240,8 @@ canvas {
   max-height: 320px;
   object-fit: contain;
   border-radius: 10px;
+  /* 預覽圖放大時維持像素感，避免看起來糊掉。 */
+  image-rendering: pixelated;
 }
 
 .previewBox p {

@@ -31,6 +31,14 @@ const eraserBtn = document.getElementById("eraserBtn");
 const clearBtn = document.getElementById("clearBtn");
 const saveBtn = document.getElementById("saveBtn");
 
+// 統一關閉 canvas 2D 的平滑插值，避免縮放圖片時出現模糊邊緣。
+function disableCanvasSmoothing(context) {
+  context.imageSmoothingEnabled = false;
+  context.webkitImageSmoothingEnabled = false;
+  context.mozImageSmoothingEnabled = false;
+  context.msImageSmoothingEnabled = false;
+}
+
 let gridSize = Number(gridSizeSelect.value);
 let cellSize = canvas.width / gridSize;
 
@@ -44,45 +52,48 @@ let isPlayingAnimation = false;
 let animationTimer = null;
 let myAnimationFrameSources = [];
 
+disableCanvasSmoothing(ctx);
+disableCanvasSmoothing(animationCtx);
+
 const drawingStepsMap = {
   star: [
-    { src: "samples/steps/star-step-1.svg", label: "Step 1: Draw the star shape" },
-    { src: "samples/steps/star-step-2.svg", label: "Step 2: Add the outline" },
-    { src: "samples/steps/star-step-3.svg", label: "Step 3: Draw the face" },
-    { src: "samples/steps/star-step-4.svg", label: "Step 4: Fill the colors" }
+    { src: "samples/steps/star-step-1.svg", label: "步驟 1：畫出星星外形" },
+    { src: "samples/steps/star-step-2.svg", label: "步驟 2：補上邊線" },
+    { src: "samples/steps/star-step-3.svg", label: "步驟 3：加上表情" },
+    { src: "samples/steps/star-step-4.svg", label: "步驟 4：填入顏色" }
   ],
   heart: [
-    { src: "samples/steps/heart-step-1.svg", label: "Step 1: Draw the heart" },
-    { src: "samples/steps/heart-step-2.svg", label: "Step 2: Add the outline" },
-    { src: "samples/steps/heart-step-3.svg", label: "Step 3: Draw the face" },
-    { src: "samples/steps/heart-step-4.svg", label: "Step 4: Fill the colors" }
+    { src: "samples/steps/heart-step-1.svg", label: "步驟 1：畫出愛心輪廓" },
+    { src: "samples/steps/heart-step-2.svg", label: "步驟 2：補上邊線" },
+    { src: "samples/steps/heart-step-3.svg", label: "步驟 3：加上表情" },
+    { src: "samples/steps/heart-step-4.svg", label: "步驟 4：填入顏色" }
   ],
   cat: [
-    { src: "samples/steps/cat-step-1.svg", label: "Step 1: Draw the head" },
-    { src: "samples/steps/cat-step-2.svg", label: "Step 2: Add the ears" },
-    { src: "samples/steps/cat-step-3.svg", label: "Step 3: Draw the face" },
-    { src: "samples/steps/cat-step-4.svg", label: "Step 4: Fill the colors" }
+    { src: "samples/steps/cat-step-1.svg", label: "步驟 1：畫出貓咪頭部" },
+    { src: "samples/steps/cat-step-2.svg", label: "步驟 2：補上耳朵" },
+    { src: "samples/steps/cat-step-3.svg", label: "步驟 3：畫出五官" },
+    { src: "samples/steps/cat-step-4.svg", label: "步驟 4：填入顏色" }
   ],
   flower: [
-    { src: "samples/steps/flower-step-1.svg", label: "Step 1: Draw the center" },
-    { src: "samples/steps/flower-step-2.svg", label: "Step 2: Add petals" },
-    { src: "samples/steps/flower-step-3.svg", label: "Step 3: Draw the stem" },
-    { src: "samples/steps/flower-step-4.svg", label: "Step 4: Fill the colors" }
+    { src: "samples/steps/flower-step-1.svg", label: "步驟 1：畫出花心" },
+    { src: "samples/steps/flower-step-2.svg", label: "步驟 2：補上花瓣" },
+    { src: "samples/steps/flower-step-3.svg", label: "步驟 3：畫出莖葉" },
+    { src: "samples/steps/flower-step-4.svg", label: "步驟 4：填入顏色" }
   ],
   rocket: [
-    { src: "samples/steps/rocket-step-1.svg", label: "Step 1: Draw the body" },
-    { src: "samples/steps/rocket-step-2.svg", label: "Step 2: Add fins" },
-    { src: "samples/steps/rocket-step-3.svg", label: "Step 3: Add the window" },
-    { src: "samples/steps/rocket-step-4.svg", label: "Step 4: Fill the colors" }
+    { src: "samples/steps/rocket-step-1.svg", label: "步驟 1：畫出火箭主體" },
+    { src: "samples/steps/rocket-step-2.svg", label: "步驟 2：補上側翼" },
+    { src: "samples/steps/rocket-step-3.svg", label: "步驟 3：加上窗戶" },
+    { src: "samples/steps/rocket-step-4.svg", label: "步驟 4：填入顏色" }
   ]
 };
 
-// 依照目前選到的畫布大小，更新每一格的寬高。
+// 依照目前格數重新計算每個像素格的寬高。
 function updateCellSize() {
   cellSize = canvas.width / gridSize;
 }
 
-// 建立新的像素資料，每一格先用白色表示空白。
+// 建立新的像素資料陣列，預設全部填成白色背景。
 function createPixels() {
   pixels = [];
 
@@ -97,7 +108,7 @@ function createPixels() {
   }
 }
 
-// 把像素資料重新畫到畫布上，並順便畫出格線。
+// 依照像素資料重畫整個畫布，並顯示格線方便編輯。
 function drawCanvas() {
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
@@ -110,7 +121,7 @@ function drawCanvas() {
   }
 }
 
-// 把滑鼠在畫布上的位置，換算成第幾格。
+// 把滑鼠在畫布上的位置換算成實際格子座標。
 function getCellPosition(event) {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
@@ -125,7 +136,7 @@ function getCellPosition(event) {
   return { x, y };
 }
 
-// 根據目前工具，把指定格子改成顏色或擦成白色。
+// 在指定格子上色，若目前工具是橡皮擦則清成白色。
 function paintCell(event) {
   const { x, y } = getCellPosition(event);
 
@@ -133,36 +144,32 @@ function paintCell(event) {
     return;
   }
 
-  if (currentTool === "eraser") {
-    pixels[y][x] = "#ffffff";
-  } else {
-    pixels[y][x] = currentColor;
-  }
-
+  pixels[y][x] = currentTool === "eraser" ? "#ffffff" : currentColor;
   drawCanvas();
 }
 
-// 切換工具時，更新按鈕外觀，讓使用者知道現在是哪一個工具。
+// 更新工具按鈕外觀，讓使用者知道目前選中的工具。
 function updateToolButtons() {
   pencilBtn.classList.toggle("active", currentTool === "pencil");
   fillBtn.classList.toggle("active", currentTool === "fill");
   eraserBtn.classList.toggle("active", currentTool === "eraser");
 }
 
-// 更新右邊的圖片預覽區，讓使用者看到剛剛選的原圖。
+// 更新右側圖片預覽區塊。
 function updateImagePreview(imageSource) {
   imagePreview.src = imageSource;
   imagePreview.style.display = "block";
   previewText.style.display = "none";
 }
 
-// 把目前畫布的像素內容輸出成不含格線的圖片資料。
+// 依照目前像素內容輸出 PNG Data URL，方便下載與建立動畫影格。
 function createArtworkDataUrl() {
   const exportCanvas = document.createElement("canvas");
   const exportCtx = exportCanvas.getContext("2d");
 
   exportCanvas.width = gridSize;
   exportCanvas.height = gridSize;
+  disableCanvasSmoothing(exportCtx);
 
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
@@ -174,7 +181,7 @@ function createArtworkDataUrl() {
   return exportCanvas.toDataURL("image/png");
 }
 
-// 顯示指定範例圖片的分步驟教學，方便錄製教學影片。
+// 顯示指定範例的逐步教學圖片。
 function renderDrawingSteps(sampleId) {
   const steps = drawingStepsMap[sampleId];
 
@@ -182,7 +189,7 @@ function renderDrawingSteps(sampleId) {
 
   if (!steps || steps.length === 0) {
     stepsGrid.appendChild(stepsPlaceholder);
-    stepsPlaceholder.textContent = "還沒有選擇範例圖片。";
+    stepsPlaceholder.textContent = "這個範例目前沒有教學步驟。";
     return;
   }
 
@@ -202,19 +209,18 @@ function renderDrawingSteps(sampleId) {
   });
 }
 
-// 更新自己做的動畫影格列表。
+// 渲染「我的動畫影格」清單。
 function renderMyAnimationFrames() {
   myFramesGrid.innerHTML = "";
 
   if (myAnimationFrameSources.length === 0) {
     myFramesGrid.appendChild(myFramesPlaceholder);
-    myFramesPlaceholder.textContent = "你儲存的影格會顯示在這裡。";
-    myFramesInfo.textContent = "你目前還沒有儲存任何影格。";
+    myFramesPlaceholder.textContent = "請先把畫好的內容加入影格清單。";
+    myFramesInfo.textContent = "目前還沒有加入任何影格。";
     return;
   }
 
-  myFramesInfo.textContent =
-    "你目前已經儲存 " + myAnimationFrameSources.length + " 張影格。";
+  myFramesInfo.textContent = "目前已加入 " + myAnimationFrameSources.length + " 張影格。";
 
   myAnimationFrameSources.forEach(function (frameSource, index) {
     const frameCard = document.createElement("div");
@@ -233,22 +239,21 @@ function renderMyAnimationFrames() {
   });
 }
 
-// 更新動畫區的按鈕和文字，讓使用者知道目前播放狀態。
+// 更新動畫播放區的文字狀態。
 function updateAnimationStatus() {
   if (animationFrames.length === 0) {
-    frameInfo.textContent = "目前沒有影格";
+    frameInfo.textContent = "目前沒有影格。";
     playBtn.textContent = "播放";
     animationText.style.display = "block";
     return;
   }
 
-  frameInfo.textContent =
-    "第 " + (currentFrameIndex + 1) + " 張，共 " + animationFrames.length + " 張";
+  frameInfo.textContent = "第 " + (currentFrameIndex + 1) + " 張，共 " + animationFrames.length + " 張";
   playBtn.textContent = isPlayingAnimation ? "暫停" : "播放";
   animationText.style.display = "none";
 }
 
-// 把指定影格畫到動畫播放區。
+// 在動畫預覽畫布上繪製指定影格。
 function drawAnimationFrame(frameIndex) {
   if (animationFrames.length === 0) {
     animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
@@ -269,12 +274,11 @@ function drawAnimationFrame(frameIndex) {
   const currentFrame = animationFrames[currentFrameIndex];
 
   animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
-  animationCtx.imageSmoothingEnabled = false;
   animationCtx.drawImage(currentFrame, 0, 0, animationCanvas.width, animationCanvas.height);
   updateAnimationStatus();
 }
 
-// 停止動畫播放，避免重複建立計時器。
+// 停止目前的動畫播放計時器。
 function stopAnimationPlayback() {
   if (animationTimer) {
     clearInterval(animationTimer);
@@ -285,7 +289,7 @@ function stopAnimationPlayback() {
   updateAnimationStatus();
 }
 
-// 依照目前速度開始播放所有影格。
+// 依照目前速度設定開始循環播放動畫。
 function startAnimationPlayback() {
   if (animationFrames.length === 0) {
     return;
@@ -304,7 +308,7 @@ function startAnimationPlayback() {
   updateAnimationStatus();
 }
 
-// 切換播放或暫停狀態。
+// 切換播放與暫停狀態。
 function toggleAnimationPlayback() {
   if (isPlayingAnimation) {
     stopAnimationPlayback();
@@ -313,7 +317,7 @@ function toggleAnimationPlayback() {
   }
 }
 
-// 用暫存畫布把原本的作品縮放到新的大小，讓切換尺寸時能保留內容。
+// 當使用者切換畫布尺寸時，保留原有圖案並重新縮放到新格數。
 function resizePixels(newGridSize) {
   const oldGridSize = gridSize;
   const oldPixels = pixels;
@@ -322,6 +326,7 @@ function resizePixels(newGridSize) {
 
   tempCanvas.width = oldGridSize;
   tempCanvas.height = oldGridSize;
+  disableCanvasSmoothing(tempCtx);
 
   for (let y = 0; y < oldGridSize; y++) {
     for (let x = 0; x < oldGridSize; x++) {
@@ -339,6 +344,7 @@ function resizePixels(newGridSize) {
 
   scaledCanvas.width = gridSize;
   scaledCanvas.height = gridSize;
+  disableCanvasSmoothing(scaledCtx);
   scaledCtx.drawImage(tempCanvas, 0, 0, oldGridSize, oldGridSize, 0, 0, gridSize, gridSize);
 
   const imageData = scaledCtx.getImageData(0, 0, gridSize, gridSize).data;
@@ -357,17 +363,17 @@ function resizePixels(newGridSize) {
   drawCanvas();
 }
 
-// 把 0 到 255 的顏色數字轉成兩位數的 16 進位文字。
+// 把 0 到 255 的數字轉成兩位數十六進位字串。
 function toHex(number) {
   return number.toString(16).padStart(2, "0");
 }
 
-// 把圖片的紅綠藍數值組合成網頁常用的色碼。
+// 將 RGB 數值組合成十六進位色碼。
 function rgbToHex(red, green, blue) {
   return "#" + toHex(red) + toHex(green) + toHex(blue);
 }
 
-// 從點到的格子開始，把相連且同色的區域一次填滿。
+// 用簡單的 flood fill 演算法填滿相鄰同色區塊。
 function fillArea(startX, startY) {
   const targetColor = pixels[startY][startX];
   const fillColor = currentColor;
@@ -400,13 +406,14 @@ function fillArea(startX, startY) {
   }
 }
 
-// 把上傳的圖片縮成 32x32，並把每一格顏色轉成像素畫。
+// 將匯入圖片縮到目前格數，並讀取成像素顏色資料。
 function convertImageToPixelArt(image) {
   const tempCanvas = document.createElement("canvas");
   const tempCtx = tempCanvas.getContext("2d");
 
   tempCanvas.width = gridSize;
   tempCanvas.height = gridSize;
+  disableCanvasSmoothing(tempCtx);
 
   tempCtx.clearRect(0, 0, gridSize, gridSize);
   tempCtx.drawImage(image, 0, 0, gridSize, gridSize);
@@ -432,7 +439,7 @@ function convertImageToPixelArt(image) {
   drawCanvas();
 }
 
-// 載入一張圖片來源，並直接轉成目前畫布大小的像素畫。
+// 載入圖片並立刻套用到畫布，方便直接接著手動修改。
 function useImageForPainting(imageSource) {
   const image = new Image();
 
@@ -447,7 +454,7 @@ function useImageForPainting(imageSource) {
   image.src = imageSource;
 }
 
-// 把目前的像素作品輸出成 PNG 圖片，方便存到電腦。
+// 將目前畫布下載成 PNG 檔案。
 function saveArtwork() {
   const downloadLink = document.createElement("a");
   const timeText = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
@@ -457,7 +464,7 @@ function saveArtwork() {
   downloadLink.click();
 }
 
-// 讀取一張內建圖片，成功後回傳 Image 物件。
+// 從網址或 Data URL 載入圖片，供動畫預覽使用。
 function loadImageFromSource(imageSource) {
   return new Promise(function (resolve, reject) {
     const image = new Image();
@@ -467,14 +474,14 @@ function loadImageFromSource(imageSource) {
     });
 
     image.addEventListener("error", function () {
-      reject(new Error("圖片載入失敗"));
+      reject(new Error("圖片載入失敗。"));
     });
 
     image.src = imageSource;
   });
 }
 
-// 讀取一張影格圖片，成功後回傳 Image 物件。
+// 從使用者選取的檔案讀取單張影格圖片。
 function loadFrameImage(file) {
   return new Promise(function (resolve, reject) {
     const reader = new FileReader();
@@ -487,28 +494,28 @@ function loadFrameImage(file) {
       });
 
       image.addEventListener("error", function () {
-        reject(new Error("圖片讀取失敗"));
+        reject(new Error("影格圖片載入失敗。"));
       });
 
       image.src = reader.result;
     });
 
     reader.addEventListener("error", function () {
-      reject(new Error("檔案讀取失敗"));
+      reject(new Error("無法讀取影格檔案。"));
     });
 
     reader.readAsDataURL(file);
   });
 }
 
-// 讀取整個資料夾中的圖片，並依照檔名排序成動畫影格。
+// 載入整個資料夾中的圖片，並依檔名排序成動畫影格。
 async function loadAnimationFrames(files) {
   stopAnimationPlayback();
   animationFrames = [];
   currentFrameIndex = 0;
-  animationText.textContent = "正在讀取動畫圖片...";
+  animationText.textContent = "正在載入影格中...";
   animationText.style.display = "block";
-  frameInfo.textContent = "正在整理影格";
+  frameInfo.textContent = "正在準備動畫。";
 
   const imageFiles = Array.from(files).filter(function (file) {
     return file.type.startsWith("image/");
@@ -520,7 +527,7 @@ async function loadAnimationFrames(files) {
 
   if (imageFiles.length === 0) {
     animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
-    animationText.textContent = "資料夾裡沒有可播放的圖片";
+    animationText.textContent = "這個資料夾裡沒有可用的圖片檔案。";
     updateAnimationStatus();
     return;
   }
@@ -532,18 +539,18 @@ async function loadAnimationFrames(files) {
   );
 
   animationFrames = loadedFrames;
-  animationText.textContent = "還沒有選擇動畫資料夾";
+  animationText.textContent = "影格已載入完成。";
   drawAnimationFrame(0);
 }
 
-// 讀取指定的動畫影格來源，載入到播放區。
+// 用既有的影格來源清單建立動畫。
 async function loadFrameSources(frameSources) {
   stopAnimationPlayback();
   animationFrames = [];
   currentFrameIndex = 0;
-  animationText.textContent = "正在讀取動畫...";
+  animationText.textContent = "正在載入影格中...";
   animationText.style.display = "block";
-  frameInfo.textContent = "正在整理影格";
+  frameInfo.textContent = "正在準備動畫。";
 
   const loadedFrames = await Promise.all(
     frameSources.map(function (frameSource) {
@@ -552,17 +559,17 @@ async function loadFrameSources(frameSources) {
   );
 
   animationFrames = loadedFrames;
-  animationText.textContent = "還沒有選擇動畫資料夾";
+  animationText.textContent = "影格已載入完成。";
   drawAnimationFrame(0);
 }
 
-// 載入自己儲存的影格到播放區。
+// 載入使用者自行建立的影格清單。
 async function loadMyAnimationFrames() {
   if (myAnimationFrameSources.length === 0) {
     animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
-    animationText.textContent = "請先加入你自己的影格。";
+    animationText.textContent = "請先加入至少一張影格。";
     animationText.style.display = "block";
-    frameInfo.textContent = "目前沒有自製影格";
+    frameInfo.textContent = "目前沒有可播放的影格。";
     stopAnimationPlayback();
     return;
   }
@@ -570,7 +577,6 @@ async function loadMyAnimationFrames() {
   await loadFrameSources(myAnimationFrameSources);
 }
 
-// 按下滑鼠就開始畫，並先畫目前碰到的那一格。
 canvas.addEventListener("mousedown", function (event) {
   const { x, y } = getCellPosition(event);
 
@@ -589,7 +595,6 @@ canvas.addEventListener("mousedown", function (event) {
   paintCell(event);
 });
 
-// 按住滑鼠拖曳時，經過的格子都會繼續畫上去。
 canvas.addEventListener("mousemove", function (event) {
   if (!isDrawing) {
     return;
@@ -598,77 +603,65 @@ canvas.addEventListener("mousemove", function (event) {
   paintCell(event);
 });
 
-// 放開滑鼠後，就停止繪圖。
 canvas.addEventListener("mouseup", function () {
   isDrawing = false;
 });
 
-// 滑鼠離開畫布時，也停止繪圖，避免誤畫。
 canvas.addEventListener("mouseleave", function () {
   isDrawing = false;
 });
 
-// 如果在畫布外面放開滑鼠，也要結束繪圖狀態。
 document.addEventListener("mouseup", function () {
   isDrawing = false;
 });
 
-// 選顏色時，記住新的顏色，並自動切回鉛筆工具。
 colorPicker.addEventListener("input", function () {
   currentColor = colorPicker.value;
   currentTool = "pencil";
   updateToolButtons();
 });
 
-// 點鉛筆按鈕時，切換成鉛筆工具。
 pencilBtn.addEventListener("click", function () {
   currentTool = "pencil";
   updateToolButtons();
 });
 
-// 點填色按鈕時，切換成填色工具。
 fillBtn.addEventListener("click", function () {
   currentTool = "fill";
   updateToolButtons();
 });
 
-// 點橡皮擦按鈕時，切換成橡皮擦工具。
 eraserBtn.addEventListener("click", function () {
   currentTool = "eraser";
   updateToolButtons();
 });
 
-// 點清空畫布按鈕時，把所有格子恢復成白色。
 clearBtn.addEventListener("click", function () {
   createPixels();
   drawCanvas();
 });
 
-// 點存檔按鈕時，下載目前的像素作品。
 saveBtn.addEventListener("click", function () {
   saveArtwork();
 });
 
-// 把目前畫布存成自己的動畫影格。
 addFrameBtn.addEventListener("click", function () {
   myAnimationFrameSources.push(createArtworkDataUrl());
   renderMyAnimationFrames();
 });
 
-// 播放自己儲存的動畫影格。
 playMyFramesBtn.addEventListener("click", async function () {
   try {
     await loadMyAnimationFrames();
   } catch (error) {
     stopAnimationPlayback();
     animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
-    animationText.textContent = "載入你的影格時發生錯誤。";
+    animationText.textContent = "載入我的影格時發生錯誤。";
     animationText.style.display = "block";
-    frameInfo.textContent = "請再試一次";
+    frameInfo.textContent = "影格載入失敗。";
   }
 });
 
-// 刪除最後一張自己儲存的影格。
 deleteLastFrameBtn.addEventListener("click", function () {
   if (myAnimationFrameSources.length === 0) {
     return;
@@ -678,18 +671,15 @@ deleteLastFrameBtn.addEventListener("click", function () {
   renderMyAnimationFrames();
 });
 
-// 清空自己儲存的所有影格。
 clearMyFramesBtn.addEventListener("click", function () {
   myAnimationFrameSources = [];
   renderMyAnimationFrames();
 });
 
-// 點播放按鈕時，開始或暫停動畫。
 playBtn.addEventListener("click", function () {
   toggleAnimationPlayback();
 });
 
-// 點上一張按鈕時，切到前一張影格。
 prevFrameBtn.addEventListener("click", function () {
   if (animationFrames.length === 0) {
     return;
@@ -699,7 +689,6 @@ prevFrameBtn.addEventListener("click", function () {
   drawAnimationFrame(currentFrameIndex - 1);
 });
 
-// 點下一張按鈕時，切到下一張影格。
 nextFrameBtn.addEventListener("click", function () {
   if (animationFrames.length === 0) {
     return;
@@ -709,7 +698,6 @@ nextFrameBtn.addEventListener("click", function () {
   drawAnimationFrame(currentFrameIndex + 1);
 });
 
-// 改變速度時，如果正在播放就立刻用新速度重新開始。
 speedRange.addEventListener("input", function () {
   if (isPlayingAnimation) {
     startAnimationPlayback();
@@ -718,13 +706,11 @@ speedRange.addEventListener("input", function () {
   }
 });
 
-// 切換畫布大小時，把作品一起縮放到新的格數，最大支援到 128x128。
 gridSizeSelect.addEventListener("change", function () {
   const newGridSize = Number(gridSizeSelect.value);
   resizePixels(newGridSize);
 });
 
-// 選擇圖片後，讀取檔案並轉成 32x32 的像素畫。
 imageInput.addEventListener("change", function () {
   const file = imageInput.files[0];
 
@@ -741,7 +727,6 @@ imageInput.addEventListener("change", function () {
   reader.readAsDataURL(file);
 });
 
-// 點範例圖片時，直接把內建圖片載入到畫布裡。
 sampleCards.forEach(function (sampleCard) {
   sampleCard.addEventListener("click", function () {
     const sampleId = sampleCard.dataset.sampleId;
@@ -751,16 +736,15 @@ sampleCards.forEach(function (sampleCard) {
   });
 });
 
-// 選擇資料夾後，把裡面的圖片當成動畫影格讀進來。
 framesInput.addEventListener("change", async function () {
   try {
     await loadAnimationFrames(framesInput.files);
   } catch (error) {
     stopAnimationPlayback();
     animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
-    animationText.textContent = "讀取動畫圖片時發生錯誤";
+    animationText.textContent = "載入動畫影格時發生錯誤。";
     animationText.style.display = "block";
-    frameInfo.textContent = "請重新選擇資料夾";
+    frameInfo.textContent = "影格載入失敗。";
   }
 });
 
